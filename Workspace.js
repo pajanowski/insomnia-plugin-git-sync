@@ -1,4 +1,5 @@
 const fs = require('fs');
+const config = require('./config.json');
 
 class Workspace {
     importProject(context, data) {
@@ -35,6 +36,11 @@ class Workspace {
         expObj.__export_source = 'insomnia.desktop.app:v2021.6.0';
         let tmpArr = [];
         for (let i = 0; i < expObj.resources.length; i++) {
+            if (config.filterOutAuth) {
+                if (expObj.resources[i].authentication) {
+                    delete expObj.resources[i].authentication
+                }
+            }
             if (expObj.resources[i]._type === 'api_spec'
                 || expObj.resources[i]._type === 'cookie_jar') {
                 // remove this as it makes many merge conflicts
@@ -56,6 +62,7 @@ class Workspace {
             tmpArr.push(expObj.resources[i]);
         }
         expObj.resources = tmpArr;
+        console.log(expObj);
 
         const expFilename = this.getWorkspaceFile(data);
         fs.writeFileSync(expFilename, JSON.stringify(expObj));
